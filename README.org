@@ -1,0 +1,91 @@
+#+TITLE: Chains README
+#+AUTHOR:    William Clifford
+#+EMAIL:     will@wobh.org
+#+DATE:      2021-07-24 Sat
+
+* Introduction
+
+Provides sequential structure types implemented with lists. I've tried
+for the simplest formalization. Current classes:
+
+- chain :: an abstract sequence class
+- stack :: a first-in-first-out (FIFO) structure
+- queue :: a last-in-first-out (LIFO) structure
+- cycle :: a circular structure
+
+Some helpful methods which have also been defined for lists:
+
+- sizef 
+- peekf
+- pushf
+- pullf
+- nextf
+
+See internal documentation for them.
+
+* Purpose
+
+This is here shared with the idea that some might find it useful for
+personal experiments and toys--that's all I'm using it for. It might
+also be cautionarily if not pedagogically useful. All that said, it
+should not expected to have any performance characteristics, or be
+useful in any way.
+
+Commercial use is forbidden.
+
+Non-casual personal use is strongly discouraged.
+
+Really, the main purpose here is simply a self-demonstration of module
+making that I can reuse for making more complex projects.
+
+This package also demonstrates a technique I discovered for writing
+inheritable, composable ~print-object~ methods using ~make-load-form~
+methods to help. I think this is a pretty cool trick that I hadn't
+seen elsewhere although I feel pretty sure someone else has also come
+up with it (or possibly it's a bad idea for reasons I don't know yet.)
+
+Checkout the TODO document for future plans and experiment ideas.
+
+* Instructions
+
+To use:
+
+1. Clone repository
+2. Run ~make install~ this will install it into
+   ~$XDG_DATA_HOME/common-lisp/source/org.wobh.common-lisp.tools.chains~
+3. in REPL ~(require :asdf)~ (as needed)
+4. ~(require :org.wobh.common-lisp.tools.chains)~
+
+The test package is simply Lisp assertions and loads with the rest of
+the system. If the system loads without errors all the tests passed.
+
+The package defines a nickname of ~chains~ for convenience.
+
+Example usage:
+
+#+begin_example
+CL-USER> (loop 
+  with chain = (make-instance 'chains:stack :items '(:foo :bar :baz :qux)) 
+  initially (chains:pushf chain :wat)
+  repeat 3
+  collect (chains:nextf chain) into out
+  finally (return (values out chain)))
+(:WAT :FOO :BAR)
+#<ORG.WOBH.COMMON-LISP.TOOLS.CHAINS:STACK :ITEMS (:BAZ :QUX) {10017DFE43}>
+CL-USER> (loop 
+  with chain = (make-instance 'chains:queue :items '(:foo :bar :baz :qux)) 
+  initially (chains:pushf chain :wat)
+  repeat 3
+  collect (chains:nextf chain) into out
+  finally (return (values out chain)))
+(:FOO :BAR :BAZ)
+#<ORG.WOBH.COMMON-LISP.TOOLS.CHAINS:QUEUE :ITEMS (:QUX :WAT) {10019195F3}>
+CL-USER> (loop 
+  with chain = (make-instance 'chains:cycle :items '(:foo :bar :baz :qux)) 
+  initially (chains:pushf chain :wat)
+  repeat 3
+  collect (chains:nextf chain) into out
+  finally (return (values out chain)))
+(:FOO :BAR :BAZ)
+#<ORG.WOBH.COMMON-LISP.TOOLS.CHAINS:CYCLE :ITEMS (:QUX :WAT :FOO :BAR :BAZ) {1001A5FE43}>
+#+end_example

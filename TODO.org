@@ -1,0 +1,199 @@
+#+TITLE: Chains TODO
+#+AUTHOR:    William Clifford
+#+EMAIL:     will@wobh.org
+#+DATE:      2021-07-24 Sat
+
+* TODO applicative interface
+
+#+name: applicatives
+#+begin_src lisp
+  (defun make-foldablef (a-function) ; FIXME: needs better name
+    (lambda (acc elt)
+      (pushf acc
+	     (funcall a-function elt))))
+
+  (defgeneric foldf (container function &key with)
+    (:documentation "foldf
+
+  Given a container and a folding-function ...")
+    (:method ((list list) (function function) &key with)
+      (reduce function list :initial-value with)))
+
+  (defgeneric joinf (container-a container-b)
+    (:method ((list-a list) (list-b list))
+      (foldf list-b #'pushf :with (copy-list list-b))))
+
+  (defgeneric eachf (chain function)
+    (:method ((list list) (function function))
+      (flet ((fold (acc elt)
+	       (pushf acc (funcall function elt))
+	       acc))
+	(nreverse (foldf list fold :with ())))))
+#+end_src
+
+#+applicative tests
+#+begin_src lisp
+(let* ((subject (let ((a-stack (make-instance 'chains:stack)))
+		  (chains:pushf a-stack 1)
+		  (chains:pushf a-stack 2)
+		  (chains:pushf a-stack 4)
+		  (chains:pushf a-stack 8)))
+       (expected 15)
+       (actually (chains:foldf subject #'-)))
+  (assert (= expected actually)
+	  (subject expected actually)
+	  "foldf stack ~A~&~
+          expected: ~A~&~
+          actually: ~A"
+	  subject
+	  expected
+	  actually))
+
+(let* ((subject (let ((a-stack (make-instance 'chains:stack)))
+		  (chains:pushf a-stack :foo)
+		  (chains:pushf a-stack :qux)))
+       (object  (let ((a-stack (make-instance 'chains:stack)))
+		  (chains:pushf a-stack :bar)
+		  (chains:pushf a-stack :baz)))
+       (expected '(:foo :qux :bar :baz))
+       (actually (chains:foldf subject #'-)))
+  (assert (equal expected actually)
+	  (subject expected actually)
+	  "joinf stack ~A~&~
+          expected: ~A~&~
+          actually: ~A"
+	  subject
+	  expected
+	  actually))
+
+(let* ((subject (let ((a-stack (make-instance 'chains:stack)))
+		  (chains:pushf a-stack 1)
+		  (chains:pushf a-stack 2)
+		  (chains:pushf a-stack 4)
+		  (chains:pushf a-stack 8)))
+       (expected '(2 3 5 9))
+       (actually (foldf (chains:eachf subject #'1+) #'pushf :with ())))
+  (assert (equal expected actually)
+	  (subject expected actually)
+	  "eachf stack ~A~&~
+          expected: ~A~&~
+          actually: ~A"
+	  subject
+	  expected
+	  actually))
+
+(let* ((subject (let ((a-stack (make-instance 'chains:stack)))
+		  (chains:pushf a-stack 1)
+		  (chains:pushf a-stack 2)
+		  (chains:pushf a-stack 4)
+		  (chains:pushf a-stack 8)))
+       (expected '(2 3 5 9))
+       (actually (foldf (chains:eachf subject #'1+) #'pushf :with ())))
+  (assert (equal expected actually)
+	  (subject expected actually)
+	  "eachf stack ~A~&~
+          expected: ~A~&~
+          actually: ~A"
+	  subject
+	  expected
+	  actually))
+#+end_src
+
+* TODO seekf interface
+
+#+begin_src lisp
+  (defgeneric seekf (collection item-or-key)
+    (:documentation "seekf
+
+  TODO")
+    (:method (collection list) (item t)
+      (find item collection))
+    (:method (collection list) (key function)
+      (find-if key collection)))
+#+end_src
+
+* TODO collection interface
+
+#+name: collection
+#+begin_src lisp
+  (defgeneric items (collection)
+    (:documentation "items
+
+  Given a collection, return a list of items in the collection.
+  ")
+    (:method ((collection list))
+      collection))
+
+  (defgeneric fetch (collection key)
+    (:documentation "fetch
+
+  Given a collection and a 'key', return item from collection.
+
+  If key is a function it should be a predicate function.")
+    (:method ((collection list) (key number))
+      (nth key collection))
+    (:method ((collection list) (key function))
+      (find-if key collection)))
+
+  (defgeneric store (collection key item)
+    (:documentation "store
+
+  Given a collection a key and an item, store item in collection.
+
+  If the key should be a function of two arguments: (collection item),
+  compatible with chains:pushf.")
+    (:method ((collection list) (key number) (item t))
+      (setf (nth key collection) item))
+    (:method ((collection list) (key function) (item t))
+      (funcall key collection item)))
+#+end_src
+
+* TODO performance testing
+* TODO ~make-load-form :around~
+
+Seems like something like this should work:
+
+#+begin_src lisp
+  (defmethod make-load-form
+      ((chain chain) &optional environment)
+    (declare (ignore environment))
+    `(make-instance ',(class-name (class-of queue))))
+
+  (defmethod make-load-form :around
+      ((stack stack) &optional environment)
+    (declare (ignore environment))
+    (with-slots (outgoing) stack
+      (multiple-value-bind (make-form setup-form)
+	  (call-next-method)
+	(values (append make-form
+			(list :items outgoing))
+		setup-form))))
+
+  (defmethod make-load-form :around
+      ((queue queue) &optional environment)
+    (declare (ignore environment))
+    (with-slots (incoming) queue
+      (multiple-value-bind (make-form setup-form)
+	  (call-next-method)
+	(let ((items (cdr (assoc :items make-form))))
+	  (setf items
+		(append items (reverse incoming))))
+	(values make-form
+		setup-form)))))
+#+end_src
+
+But that kind of seems like a lot though.
+
+* TODO setup asdf test op
+
+https://common-lisp.net/project/asdf/asdf/Predefined-operations-of-ASDF.html#test_002dop
+
+* TODO ~(setf (entry chain) obj)~
+
+Instead of ~pushf~ and ~pullf~ can chains be integrated with ~setf~? I
+think we defined a "place" on chains called ~entry~ we could make that
+"setf-able" and then use standard ~push~ and ~pop~ functions.
+
+For stacks the "entry" is the "front", or first member of
+~outgoing~. For queues the "entry" is the "back" or first member of
+~incoming~.

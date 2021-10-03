@@ -11,24 +11,28 @@
     (lambda (acc elt)
       (pushf acc
 	     (funcall a-function elt))))
-
+  
   (defgeneric foldf (container function &key with)
     (:documentation "foldf
-
+  
   Given a container and a folding-function ...")
     (:method ((list list) (function function) &key with)
       (reduce function list :initial-value with)))
-
+  
   (defgeneric joinf (container-a container-b)
     (:method ((list-a list) (list-b list))
       (foldf list-b #'pushf :with (copy-list list-b))))
-
+  
   (defgeneric eachf (chain function)
     (:method ((list list) (function function))
       (flet ((fold (acc elt)
 	       (pushf acc (funcall function elt))
 	       acc))
 	(nreverse (foldf list fold :with ())))))
+  
+  (defgeneric pickf (chain function)
+    (:method ((list list) (function function))
+      ()))
 #+end_src
 
 #+applicative tests
@@ -112,7 +116,51 @@
       (find-if key collection)))
 #+end_src
 
-* TODO collection interface
+* TODO Succession interface
+
+Chains are natural "succession" values, which are containers for which
+the following interfaces apply:
+
+- peekf : succession -> item, succession
+- pullf : succession -> item, modified-succession
+- pushf : succession, item -> modified-succession
+- nextf : succession -> item, modified-succession
+
+with ~nextf~ being key to the whole concept.
+
+Native objects which could be treated as additional succession objects:
+
+- lists (as stacks)
+- streams
+
+Other possible successions:
+
+- ranges
+
+* TODO Collection interface
+
+Collections are different from Successions. Collection interfaces
+allow random access to container contents through an "index" or "key".
+
+- fetchf : collection, key -> item, collection
+- pluckf : collection, key -> item, modified-collection
+- storef : collection, key, item -> modified-collection
+
+There's no equivalent to ~nextf~. In order to traverse the collection
+you'll need to do so with a succession of keys.
+
+Native objects which make sense as collections:
+
+- hash-tables
+- vectors and arrays
+- strings
+- lists (as sequences)
+
+~pluckf~ is a little problematic for sequence values that can't be
+treated "sparsely". It shouldn't modify the keys for other values in
+the sequence like ~delete~ might. What does that mean? For vectors,
+~pluckf~ could assign ~nil~ to the value at that index, that could be
+coherent with fetches. What about for strings?
 
 #+name: collection
 #+begin_src lisp
@@ -138,7 +186,7 @@
   (defgeneric store (collection key item)
     (:documentation "store
 
-  Given a collection a key and an item, store item in collection.
+  Given a collection, a key, and an item, store item in collection.
 
   If the key should be a function of two arguments: (collection item),
   compatible with chains:pushf.")
@@ -146,6 +194,16 @@
       (setf (nth key collection) item))
     (:method ((collection list) (key function) (item t))
       (funcall key collection item)))
+#+end_src
+
+Looking at fundamental differences between ~peekf~ and ~fetchf~
+
+#+begin_src lisp
+  (defmethod peekf ((succession function))
+    (funcall succession))
+
+  (defmethod fetchf ((collection function) (key t))
+    (funcall collection key))
 #+end_src
 
 * TODO performance testing

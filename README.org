@@ -11,18 +11,17 @@
 Provides sequential structure types implemented with lists. I've tried
 for the simplest formalization. Current classes:
 
-- chain :: an abstract sequence class
+- chain :: an abstract succession class
 - stack :: a first-in-first-out (FIFO) structure
 - queue :: a last-in-first-out (LIFO) structure
 - cycle :: a circular structure
 
 Some helpful methods which have also been defined for lists:
 
-- sizef 
-- peekf
-- pushf
-- pullf
-- nextf
+- peekf : succession -> object succession
+- pullf : succession -> object succession
+- pushf : succession object -> succession
+- nextf : succession -> object succession
 
 See internal documentation for them.
 
@@ -48,6 +47,138 @@ seen elsewhere although I feel pretty sure someone else has also come
 up with it (or possibly it's a bad idea for reasons I don't know yet.)
 
 Checkout the TODO document for future plans and experiment ideas.
+
+* Documentation
+
+** chain (Chain Type)
+
+*** Class Precedence List:
+
+~chain~, ~t~
+
+*** Description
+
+Base class for chains
+
+** stack (Chain Type)
+
+*** Class Precedence List:
+
+~stack~, ~chain~, ~t~
+
+** queue (Chain Type)
+
+*** Class Precedence List:
+
+~queue~, ~stack~, ~chain~, ~t~
+
+** cycle (Chain Type)
+
+*** Class Precedence List:
+
+~cycle~, ~queue~, ~stack~, ~chain~, ~t~
+
+** succession (Succession Type)
+
+*** 
+** peekf (Generic Function)
+
+*** Syntax:
+
+#+begin_example
+Generic Function: peekf succession → object, succession
+#+end_example
+
+*** Method signatures:
+
+#+begin_example
+peekf (SUCCESSION succession-object)
+peekf (SUCCESSION input-stream)
+peekf (SUCCESSION list)
+#+end_example
+
+*** Arguments and Values:
+
+- SUCCESSION :: an object which has the succession interface defined for it
+- OBJECT :: an object
+
+*** Description
+
+Given a succession, ~peekf~ returns the "first" object in the
+succession and the unmodified succession.
+** pullf (Generic Function)
+*** Syntax:
+
+#+begin_example
+Generic Function: pullf succession → object, succession
+#+end_example
+
+*** Method signatures:
+
+#+begin_example
+pullf (SUCCESSION standard-object)
+pullf (SUCCESSION input-stream)
+pullf (SUCCESSION list)
+#+end_example
+
+*** Arguments and Values:
+
+- SUCCESSION :: an object which has the succession interface defined for it
+- OBJECT :: an object
+
+*** Description
+
+Given a succession, ~pullf~ removes the "first" object in the
+succession and returns the removed object and modified succession.
+** nextf (Generic Function)
+*** Syntax:
+
+#+begin_example
+Generic Function: nextf succession → object, succession
+#+end_example
+
+*** Method signatures:
+
+#+begin_example
+nextf (SUCCESSION standard-object)
+nextf (SUCCESSION input-stream)
+nextf (SUCCESSION list)
+#+end_example
+
+*** Arguments and Values:
+
+- SUCCESSION :: an object which has the succession interface defined for it
+- OBJECT :: an object
+
+*** Description
+
+Given a succession, ~nextf~ may remove the "first" object in the
+succession, returning the object and succession, which may be further
+modified according to the properties of the succession. See: ~cycle~.
+** pushf (Generic Function)
+*** Syntax:
+
+#+begin_example
+Generic Function: pushf succession object → succession
+#+end_example
+
+*** Method signatures:
+
+#+begin_example
+pushf (SUCCESSION standard-object) OBJECT
+pushf (SUCCESSION input-stream) OBJECT
+pushf (SUCCESSION list) OBJECT
+#+end_example
+
+*** Arguments and Values:
+
+- OBJECT :: an object
+- SUCCESSION :: an object which has the succession interface defined for it
+
+*** Description
+
+Given a succession and an object, ~pushf~ stores the object in the
+succession and returns the succession.
 
 * Instructions
 

@@ -1,5 +1,7 @@
+;; -*- mode: lisp -*-
+
 (defpackage #:org.wobh.common-lisp.tools.chains-test
-  (:use #:cl)
+  (:use #:common-lisp)
   (:local-nicknames (#:chains #:org.wobh.common-lisp.tools.chains))
   (:documentation "ORG.WOBH.COMMON-LISP.TOOL.CHAINS-TEST
 

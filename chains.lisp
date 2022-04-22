@@ -1,5 +1,7 @@
+;; -*- mode: lisp -*-
+
 (defpackage #:org.wobh.common-lisp.tools.chains
-  (:use #:cl)
+  (:use #:common-lisp)
   (:nicknames #:chains)
   (:export #:chain #:stack #:queue #:cycle)
   (:export #:sizef #:peekf)

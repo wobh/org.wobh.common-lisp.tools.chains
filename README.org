@@ -1,7 +1,10 @@
-#+TITLE: Chains README
-#+AUTHOR:    William Clifford
-#+EMAIL:     will@wobh.org
-#+DATE:      2021-07-24 Sat
+#+title: Chains README
+#+date: <2021-07-24 Sat>
+#+author: William Clifford
+#+email: will@wobh.org
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
 
 * Introduction
 
@@ -28,10 +31,10 @@ See internal documentation for them.
 This is here shared with the idea that some might find it useful for
 personal experiments and toys--that's all I'm using it for. It might
 also be cautionarily if not pedagogically useful. All that said, it
-should not expected to have any performance characteristics, or be
+should not be expected to have any desireable characteristics or be
 useful in any way.
 
-Commercial use is forbidden.
+Non-personal use (for example, commercial) is forbidden.
 
 Non-casual personal use is strongly discouraged.
 
@@ -52,7 +55,7 @@ To use:
 
 1. Clone repository
 2. Run ~make install~ this will install it into
-   ~$XDG_DATA_HOME/common-lisp/source/org.wobh.common-lisp.tools.chains~
+   ~${XDG_DATA_HOME}/common-lisp/source/org.wobh.common-lisp.tools.chains~
 3. in REPL ~(require :asdf)~ (as needed)
 4. ~(require :org.wobh.common-lisp.tools.chains)~
 
@@ -89,3 +92,10 @@ CL-USER> (loop
 (:FOO :BAR :BAZ)
 #<ORG.WOBH.COMMON-LISP.TOOLS.CHAINS:CYCLE :ITEMS (:QUX :WAT :FOO :BAR :BAZ) {1001A5FE43}>
 #+end_example
+
+* COMMENT org settings
+#+options: ':nil *:t -:t ::t <:t H:6 \n:nil ^:t arch:headline
+#+options: author:t broken-links:nil c:nil creator:nil
+#+options: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:nil
+#+options: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+options: timestamp:t title:t toc:nil todo:t |:t

@@ -104,7 +104,7 @@ container and returns the container.")
     ((stack stack) &key items &allow-other-keys)
   (call-next-method)
   (with-slots (outgoing o-length) stack
-    (setf outgoing items)
+    (setf outgoing (copy-list items))
     (incf o-length (length outgoing)))
   stack)
 
